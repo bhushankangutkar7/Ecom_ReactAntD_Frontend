@@ -1,90 +1,99 @@
-import React,{useState} from 'react';
+import React,{useContext, useEffect, useState} from 'react';
 import { LaptopOutlined, NotificationOutlined, UserOutlined, ProductOutlined } from '@ant-design/icons';
-import { Breadcrumb, Layout, Menu, theme } from 'antd';
+import { ConfigProvider, Layout, Menu, theme } from 'antd';
+import { BrowserRouter as Router, Routes, Route} from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
+import HeaderComponent from "./components/HeaderComponent.jsx";
+import FooterComponent from "./components/FooterComponent.jsx";
+import Products from "./pages/Products.jsx";
+import Home from "./pages/Home.jsx";
+import Login from "./pages/Login.jsx";
+import Register from "../src/pages/Register.jsx";
+import LoggedIn from "../src/pages/LoggedIn.jsx";
+import AuthContext from './context/authContext.jsx';
 
-const { Header, Content, Footer, Sider } = Layout;
 
-const isLogin = true; //Hard quoated for now will change later
-const isAdmin = true; // Hard quoated for now will change later
+// const isLogin = true; //Hard quoated for now will change later
+// const isAdmin = true; // Hard quoated for now will change later
 
 // const isLogin = false; //Hard quoated for now will change later
 // const isAdmin = false; // Hard quoated for now will change later
 
-const navItems = isLogin ? ["Home"] : ["Home", "Login"] ;
-
-const items1 = navItems.map(key => ({
-  key,
-  label: `${key}`,
-}));
 
 
-const subnav = isAdmin ? ["Manage Users", "Manage Products"] : ["Manage Products"];
-
-const subnavIcons = isAdmin ? [UserOutlined, ProductOutlined] : [ProductOutlined];
-
-const options = isAdmin ? [`All Users`,`Add User`, `All Products`, `Add Product`]: [`All Products`, `Add Product`];
-
-
-const sideBarChildrenLength = 2;
-
-const items2 = subnavIcons.map((icon, index) => {
-  const key = String(index + 1);
-  return {
-    key: `sub${key}`,
-    icon: React.createElement(icon),
-    label: subnav[index],
-    children: Array.from({ length: sideBarChildrenLength }).map((_, j) => {
-      const subKey = index * sideBarChildrenLength + j + 1;
-      return {
-        key: subKey,
-        label: options[subKey-1],
-      };
-    }),
-  };
-});
 
 const App = () => {
-  const {
-    token: { colorBgContainer, borderRadiusLG },
-  } = theme.useToken();
+
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userRole, setUserRole] = useState("");
+
+
+  const token = localStorage.getItem("authToken");
+
+  const verifyToken = async(token) => {
+    const backendApi = import.meta.env.VITE_BACKEND_API;
+
+    if(!token){
+      console.log(`No token found`);
+      setIsLoggedIn(false);
+    };
+
+    try{
+      const checkToken = await axios.get(`${backendApi}/verify-token`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          },
+        });
+        console.log(checkToken.status);
+
+        if(checkToken.status === 200){
+          console.log(checkToken);
+          setIsLoggedIn(true);
+          const decodedToken = jwtDecode(token);
+          console.log(`Decoded Token: ${decodedToken}`)
+          setUserRole(decodedToken.role_id);
+        }else{
+          console.log(`Invalid Token`);
+          setIsLoggedIn(false);
+        }
+    }
+    catch(err){
+      console.log(`Token Verification failed`);
+    }
+  };
+
+
+  useEffect(()=>{
+    verifyToken(token);
+    console.log('App Component');
+  },[isLoggedIn, token]);
 
   return (
-    <Layout style={{height: "100vh"}}>
-      <Header style={{ display: 'flex', alignItems: 'center' }}>
-        <div className="demo-logo" />
-        <Menu
-          theme="dark"
-          mode="horizontal"
-          defaultSelectedKeys={['2']}
-          items={items1}
-          style={{ flex: 1, minWidth: 0 }}
-        />
-      </Header>
-      <div style={{ padding: '0 48px' }}>
-        <Breadcrumb style={{ margin: '16px 0' }}>
-          <Breadcrumb.Item>Home</Breadcrumb.Item>
-          <Breadcrumb.Item>Company Name</Breadcrumb.Item>
-          <Breadcrumb.Item>Admin or User</Breadcrumb.Item>
-        </Breadcrumb>
-        <Layout
-          style={{ padding: '24px 0', background: colorBgContainer, borderRadius: borderRadiusLG }}
-        >
-          <Sider style={{ background: colorBgContainer }} width={200}>
-            <Menu
-              mode="inline"
-              defaultSelectedKeys={['1']}
-              defaultOpenKeys={['sub1']}
-              style={{ height: '100%' }}
-              items={items2}
-            />
-          </Sider>
-          <Content style={{ padding: '0 24px', minHeight: 280 }}>Content</Content>
-        </Layout>
-      </div>
-      <Footer style={{ textAlign: 'center', height: "10vh" }}>
-        Ecom Practice ©{new Date().getFullYear()} Created by Bhushan
-      </Footer>
-    </Layout>
+    <AuthContext.Provider value={{isLoggedIn, setIsLoggedIn, userRole, setUserRole}}>
+      <ConfigProvider>
+        <Router>
+          <Layout style={{ minWidth: "450px"
+          }}>
+            {/* Header Component */}
+            <HeaderComponent/> 
+            <Routes>
+            {/* Route Section */}
+              <Route path="/" element={<Home/>}/>
+              <Route path="/products" element={<Products/>}/>
+              <Route path="/login" element={<Login/>}/>
+              <Route path="/register" element={<Register/>}/>
+              <Route path="/logged-in" element={<LoggedIn/>}/>
+            </Routes>
+
+            {/* Footer Section */}
+            <FooterComponent/>
+          </Layout>
+        </Router>
+      </ConfigProvider>
+    </AuthContext.Provider>
+    
+    
   );
 };
 export default App;
