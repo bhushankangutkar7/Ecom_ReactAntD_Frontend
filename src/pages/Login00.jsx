@@ -26,7 +26,7 @@ const loginValidator = Yup.object({
     .required(`Password is required`)
 });
 
-const Login = () => {
+const login = () => {
 
   const [userLoginData, setUserLoginData] = useState({
     email_id: "",
@@ -163,4 +163,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default login;

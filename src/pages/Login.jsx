@@ -1,10 +1,11 @@
 import React, {useContext} from "react";
-import { Formik, Form, Field, ErrorMessage } from "formik";
-import { Button, Card, Input, Checkbox } from "antd";
+import { useNavigate } from "react-router-dom";
 import * as Yup from "yup";
 import axios from "axios";
-import AuthContext from "../context/authContext";
 import { jwtDecode } from "jwt-decode";
+import { Formik, Form, Field, ErrorMessage } from "formik";
+import { Button, Card, Input, Checkbox } from "antd";
+import AuthContext from "../context/authContext";
 
 const loginValidationSchema = Yup.object({
   email_id: Yup.string()
@@ -24,9 +25,11 @@ const loginValidationSchema = Yup.object({
   remember: Yup.boolean(),
 });
 
-const Login = () => {
+const login = () => {
 
-  const {isLoggedIn, setIsLoggedIn, userRole, setUserRole} = useContext(AuthContext); 
+  const {isLoggedIn, setIsLoggedIn, userData, setUserData} = useContext(AuthContext); 
+
+  const navigate = useNavigate();
 
   const initialLoginValues = {
     email_id: "",
@@ -35,28 +38,34 @@ const Login = () => {
   };
 
 
-  const handleSubmit = (values) => {
-    console.log("Form Data:", values);
+  const handleSubmit = async(values) => {
     const backendApi = import.meta.env.VITE_BACKEND_API;
-    axios.post(`${backendApi}/login`, values)
-      .then((res)=>{
-        console.log(res);
-        console.log(res.status);
-        if(res.status === 200){
-          setIsLoggedIn(true);
-          localStorage.setItem("authToken", res.data.authToken);
-          const decodedToken  = jwtDecode(res.data.authToken);
-          setUserRole(decodedToken.role_id);
-          console.log(isLoggedIn);
+
+    try{
+      const response = await axios.post(`${backendApi}/login`, values);
+
+      if(response.status === 200){
+        localStorage.setItem("authToken", response.data.authToken);
+        const decodedToken  = jwtDecode(response.data.authToken);
+        const {user_id, role_id, company_id, company_name, iat, exp} = decodedToken;
+        setUserData({...userData,user_id, role_id, company_id, company_name, iat, exp});
+        setIsLoggedIn(true);
+        if(userData.role_id === 1){
+          navigate("/admin");
+      
         }
-        else{
-          setIsLoggedIn(false);
+        if(userData.role_id === 2){
+          navigate("/user");
         }
-      })
-      .catch((err)=>{
-        console.log(err);
-      })
+      }
+
+    } 
+    catch(err){
+      console.log(err);
+      setIsLoggedIn(false);
+    }
   };
+
 
   return (
     <div
@@ -137,4 +146,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default login;

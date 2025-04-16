@@ -1,9 +1,9 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import {Formik, Form, Field, ErrorMessage} from "formik";
 import { Button, Input, Card } from 'antd';
 import axios from "axios";
 import * as Yup from "yup";
-import { jwtDecode } from 'jwt-decode';
 
 const registerValidationSchema = Yup.object({
   company_name: Yup.string()
@@ -41,9 +41,10 @@ const registerValidationSchema = Yup.object({
     .required(),
 })
 
-const Register = () => {
 
+const register = () => {
 
+  const navigate = useNavigate();
 
   const intialRegistrationValues = {
     company_name: "",
@@ -57,10 +58,22 @@ const Register = () => {
     role_id: 1,
   };
 
-
-  const handleSubmit = (values) => {
+  const handleSubmit = async(values) => {
     console.log(`Form Data: `, values);
     const backendApi = import.meta.env.VITE_BACKEND_API;
+
+    try{
+      const response = await axios.post(`${backendApi}/register`, values);
+      if(response.status === 200){
+        alert(response.data.msg);
+        navigate("/auth/login");
+      }
+      
+    }
+    catch(err){
+      console.log(err);
+    }
+    
     axios.post(`${backendApi}/register`,values)
       .then((result)=>{
         console.log(result);
@@ -68,7 +81,6 @@ const Register = () => {
       .catch((err)=>{
         console.log(err);
       })
-
   }
 
   return (
@@ -213,7 +225,7 @@ const Register = () => {
               <div style={{ marginBottom: 16 }}>
                 <label>Admin Password</label>
                 <Field
-                  as={Input}
+                  as={Input.Password}
                   name="password"
                   placeholder="Enter your Password"
                   onChange={handleChange}
@@ -232,7 +244,7 @@ const Register = () => {
               <div style={{ marginBottom: 16 }}>
                 <label>Confirm Admin Password</label>
                 <Field
-                  as={Input}
+                  as={Input.Password}
                   name="confirm_password"
                   placeholder="Confirm Admin Password"
                   onChange={handleChange}
@@ -259,5 +271,5 @@ const Register = () => {
   );
 };
 
-export default Register;
+export default register;
 

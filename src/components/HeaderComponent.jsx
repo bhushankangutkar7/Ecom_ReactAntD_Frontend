@@ -1,58 +1,60 @@
-import {Layout, Menu} from "antd";
-import { NavLink } from "react-router-dom";
-import {useContext} from "react";
+import { Layout, Menu } from "antd";
+import { NavLink, useNavigate } from "react-router-dom";
+import { useContext } from "react";
 import AuthContext from "../context/authContext";
+import {LogoutOutlined, UserOutlined, HomeOutlined} from "@ant-design/icons"
 
+const HeaderComponent = () => {
+  const { isLoggedIn, setIsLoggedIn, setUserData, isAdmin } = useContext(AuthContext);
+  const { Header } = Layout;
+  const navigate = useNavigate();
 
+  const logOutUser = () => {
+    localStorage.removeItem("authToken");
+    setIsLoggedIn(false);
+    setUserData({});
+    navigate("/login");
+  };
 
-const headerComponent = () => {
+  const userKey = isAdmin ? "admin" : "user";
+  const userLabel = isAdmin ? "Admin" : "User";
 
-    const {isLoggedIn} = useContext(AuthContext);
+  // Define the menu items based on login status
+  const menuItems = isLoggedIn
+    ? [
+        { key: "home", label: <NavLink to="/">Home</NavLink>, icon: <HomeOutlined /> },
+        { key: "user", label: <NavLink to="/admin">{userLabel}</NavLink>, icon: <UserOutlined /> },
+        { key: "logout", label: "Log out", onClick: logOutUser, icon: <LogoutOutlined /> },
+      ]
+    : [
+        { key: "home", label: <NavLink to="/">Home</NavLink> },
+        { key: "login", label: <NavLink to="/login">Login</NavLink> },
+        { key: "register", label: <NavLink to="/register">Register</NavLink> },
+      ];
 
-    const {Header} = Layout;
+  return (
+    <Header
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+      }}
+    >
+      <div className="demo-logo">
+        <h1 style={{ color: "#d4d0c7", margin: 0 }}>Ecom</h1>
+      </div>
 
-    const navItems = isLoggedIn ? ["Home","Logout"] : ["Home", "Login", "Register"] ;
-
-    const routeMap = isLoggedIn ? {
-        Home: "/",
-        Logout: "/logout",
-      }:
-        {
-            Home: "/",
-            Login: "/login",
-            Register: "/register",
-        };
-
-    const items1 = navItems.map(key => ({
-        key: routeMap[key],
-        label: <NavLink to={routeMap[key]}>{key}</NavLink>,
-    }));
-
-    return(
-        <>
-            <Header style={{ display: 'flex', alignItems: 'center', justifyContent:"space-between" }}>
-                <div  className="demo-logo">
-                    <h1 style={{color: "#d4d0c7"}}>
-                        Ecom
-                    </h1>  
-                </div>
- 
-                <div>
-                    <Menu
-                        theme="dark"
-                        mode="horizontal"
-                        defaultSelectedKeys={['3']}
-                        items={items1}
-                        style={{ 
-                            minWidth: 0,
-                            flex: 1, 
-                        }}
-                    />
-                </div>
-                
-            </Header>
-        </>
-    );
+      <div style={{ flex: 1, display: "flex", justifyContent: "flex-end" }}>
+        <Menu
+          theme="dark"
+          mode="horizontal"
+          selectable={false}
+          style={{ borderBottom: "none" }}
+          items={menuItems}
+        />
+      </div>
+    </Header>
+  );
 };
 
-export default headerComponent;
+export default HeaderComponent;

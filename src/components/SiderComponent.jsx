@@ -1,12 +1,14 @@
-import React from "react";
+import React, {useContext} from "react";
 import { Menu, Layout, theme, ConfigProvider} from "antd";
 import {UserOutlined, ProductOutlined} from "@ant-design/icons";
+import AuthContext from "../context/authContext";
 
 const {Sider}  = Layout;
 
 const siderComponent = () => {
 
-    const isAdmin = true;
+    const {isLoggedIn, isAdmin, isUser} = useContext(AuthContext);
+ 
 
     const {
         token: {colorBgContainer},
