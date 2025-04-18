@@ -1,56 +1,60 @@
 import React, {useContext} from "react";
 import { Menu, Layout, theme, ConfigProvider} from "antd";
-import {UserOutlined, ProductOutlined} from "@ant-design/icons";
-import AuthContext from "../context/authContext";
+import {UserOutlined, ProductOutlined, UserAddOutlined, UsergroupAddOutlined, AppstoreAddOutlined, WindowsOutlined} from "@ant-design/icons";
+import AuthContext from "../context/AuthContext";
+import SiderSelectContext from "../context/SiderSelectContext.jsx";
 
 const {Sider}  = Layout;
 
 const siderComponent = () => {
 
-    const {isLoggedIn, isAdmin, isUser} = useContext(AuthContext);
+    const {isAdmin} = useContext(AuthContext);
+    const {setSiderSelection} = useContext(SiderSelectContext);
  
 
-    const {
-        token: {colorBgContainer},
-    } = theme.useToken();
+    const items3= isAdmin ? [
+        {key: "manage-users", label: "Manage Users", icon: <UserAddOutlined />,
+            children: [
+                {key: "all-users", label: "All Users", icon: <UsergroupAddOutlined/>},
+                {key: "add-user", label: "Add User", icon: <UserAddOutlined/>}
+            ]
+        },
+        {key: "manage-products", label: "Manage Products", icon: <ProductOutlined />,
+            children:[
+                {key: "all-products", label: "All Products", icon: < WindowsOutlined/>},
+                {key: "add-product", label: "Add Product", icon: <AppstoreAddOutlined/> }
+            ]
+         }
+    ] :
+    [
+        {key: "manage-products", label: "Manage Products", icon: <ProductOutlined />,
+            children:[
+                {key: "all-products", label: "All Products", icon: < WindowsOutlined/>},
+                {key: "add-product", label: "Add Product", icon: <AppstoreAddOutlined/> }
+            ]
+         }
+    ];
 
-    const sideBarChildrenLength = 2;
+    const handleClick = (e) => {
+        setSiderSelection(()=> e.key);
+        console.log(e.key);
+    };
 
-    const subnav = isAdmin ? ["Manage Users", "Manage Products"] : ["Manage Products"];
-
-    const subnavIcons = isAdmin ? [UserOutlined, ProductOutlined] : [ProductOutlined];
-
-    const options = isAdmin ? [`All Users`,`Add User`, `All Products`, `Add Product`]: [`All Products`, `Add Product`];
-
-
-    const items2 = subnavIcons.map((icon, index) => {
-        const key = String(index + 1);
-        
-        return {
-            key: `sub${key}`,
-            icon: React.createElement(icon),
-            label: subnav[index],
-            children: Array.from({ length: sideBarChildrenLength }).map((_, j) => {
-            const subKey = index * sideBarChildrenLength + j + 1;
-            return {
-                key: subKey,
-                label: options[subKey-1],
-            };
-            }),
-        };
-    });
+    
 
     
     return(
-            <Sider style={{ background: colorBgContainer }} width={200}>
+            <Sider
+            width={200}>
                 <Menu
                 mode="inline"
-                defaultSelectedKeys={['1']}
-                defaultOpenKeys={['sub1']}
+                defaultSelectedKeys={['all-users']}
+                defaultOpenKeys={['manage-users','manage-products']}
                 style={{ height: '100%' }}
-                items={items2}
+                items={items3}
+                onClick={handleClick}
                 />
-            </Sider>        
+            </Sider>            
     );
 };
 

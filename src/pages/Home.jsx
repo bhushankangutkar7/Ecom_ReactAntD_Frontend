@@ -38,7 +38,9 @@ const home = () => {
                             <Space direction="vertical" size={16} style={{textWrap: "wrap"}}>
                                 <Card title= {product.product_name}
                                 variant = "borderless"
-                                style={{ width: 300, textWrap: "wrap" }}>
+                                style={{ width: 300, textWrap: "wrap" }}
+                                key={product.product_id}
+                                >
                                     <p>{product.product_description}</p>
                                     <p>Card content</p>
                                     <p>Card content</p>

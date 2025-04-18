@@ -1,15 +1,25 @@
-import {Layout} from "antd";
+import React, {useContext, useEffect} from "react";
+import { useNavigate } from "react-router-dom";
+import allUserContentComponent from "./content-components/AllUsersContentComponent";
+import AuthContext from "../context/AuthContext";
 
 const contentComponent = () => {
-    const {Content} = Layout;
+    const {isLoggedIn, setIsLoggedIn, userData, setUserData, isAdmin, isUser} = useContext(AuthContext);
+    const navigate = useNavigate();
+
+    useEffect(()=>{
+        if(!isLoggedIn){
+            navigate("/login");
+        }
+    });
 
     return(
         <>
-            <Content style={{ padding: '0 24px', minHeight: 280 }}>
-                Content
-            </Content> 
+    
+
         </>
     );
+
 };
 
 export default contentComponent;

@@ -5,7 +5,7 @@ import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import { Button, Card, Input, Checkbox } from "antd";
-import AuthContext from "../context/authContext";
+import AuthContext from "../context/AuthContext";
 
 const loginValidationSchema = Yup.object({
   email_id: Yup.string()
@@ -38,7 +38,9 @@ const login = () => {
   };
 
 
-  const handleSubmit = async(values) => {
+  const handleSubmit = async(values, e) => {
+    console.log(values);
+    // console.log(e.target.value);
     const backendApi = import.meta.env.VITE_BACKEND_API;
 
     try{

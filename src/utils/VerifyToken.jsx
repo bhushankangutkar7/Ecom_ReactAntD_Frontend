@@ -1,6 +1,6 @@
 import { jwtDecode } from 'jwt-decode';
 import {useContext} from "react";
-import AuthContext from '../context/authContext';
+import AuthContext from '../context/AuthContext.jsx';
 
 const verifyToken = async(token) => {
     const {setIsLoggedIn, setUserRole} = useContext(AuthContext);

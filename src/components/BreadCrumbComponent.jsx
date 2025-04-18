@@ -1,7 +1,7 @@
 import { Breadcrumb } from "antd";
 import { HomeOutlined,ApartmentOutlined, UserOutlined } from "@ant-design/icons"
 import { NavLink } from "react-router-dom";
-import AuthContext from "../context/authContext";
+import AuthContext from "../context/AuthContext";
 import { use, useContext } from "react";
 
 
@@ -15,14 +15,14 @@ const breadCrumbComponent = () => {
 
     const Items = [
         {
-            title: <><NavLink to=""><HomeOutlined/> Home</NavLink></>,
+            title: <><NavLink to="/"><HomeOutlined/> Home</NavLink></>,
         },
         {
-            title: <><NavLink to=""><ApartmentOutlined /> {company_name} </NavLink></>
+            title: <><ApartmentOutlined /> {company_name}</>
         },
         {
-            title: <><NavLink to=""><UserOutlined /> {role_id === 1 ? "Admin": "User"} </NavLink></>
-        },
+            title: <><UserOutlined /> {role_id === 1 ? "Admin": "User"}</>
+        },  
     ];
 
     return (

@@ -1,20 +1,42 @@
-import React, {useContext} from "react";
+import { Layout } from "antd";
+import React, {useEffect, useContext} from "react";
 import { useNavigate } from "react-router-dom";
-import AuthContext from "../context/authContext.jsx";
 import BreadcrumbComponent from "../components/BreadcrumbComponent.jsx";
 import SiderComponent from "../components/SiderComponent.jsx";
-import ContentComponent from "../components/ContentComponent.jsx";
-import { Layout } from "antd";
+import AllUsersContentComponent from "../components/content-components/AllUsersContentComponent.jsx";
+import AddUserContentComponent from "../components/content-components/AddUserContentComponent.jsx";
+import AllProductsContentComponent from "../components/content-components/AllProductsContentComponent.jsx";
+import AddProductContentComponent from "../components/content-components/AddProductContentComponent.jsx";
+import AuthContext from "../context/AuthContext.jsx";
+import SiderSelectContext from "../context/SiderSelectContext.jsx";
 
 const admin = () => {
-    const {isLoggedIn, setIsLoggedIn, userData, setUserData}=useContext(AuthContext);
-
+    const {isLoggedIn, userData}=useContext(AuthContext);
+    const {siderSelection} = useContext(SiderSelectContext);
+    const {Content} = Layout;
     const navigate = useNavigate();
 
-    if(!(isLoggedIn && userData.role_id === 1)){
-        navigate("/login");
-    }
+    useEffect(()=>{
+        if(!(isLoggedIn && userData.role_id === 1)){
+            navigate("/login");
+        }
+    });
 
+
+
+
+    const renderContent = () => {
+        switch(siderSelection){
+            case "all-users":
+                return <><AllUsersContentComponent/></>;
+            case "add-user":
+                return <><AddUserContentComponent/></>;
+            case "all-products":
+                return <><AllProductsContentComponent/></>;
+            case "add-product":
+                return <><AddProductContentComponent/></>
+        }
+    };
 
 
     return(
@@ -24,13 +46,13 @@ const admin = () => {
                 {/* BreadCrumb Section */}  
                 <BreadcrumbComponent/>
                 {/* Main external Section */}
-                <Layout
-                style={{ padding: '24px 0' }}
-                >
-                    {/* Side section */}
-                    <SiderComponent/>
-                    <ContentComponent/>
+                <Layout style={{ padding: '24px 0' }}>
+                    <SiderComponent />
+                    <Content style={{ padding: '0 24px', minHeight: 280, maxWidth: 1600, minWidth: 300 }}>
+                        {renderContent()}
+                    </Content>
                 </Layout>
+
             </div>
         </>
     );

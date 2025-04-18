@@ -1,8 +1,8 @@
 import { Layout, Menu } from "antd";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useContext } from "react";
-import AuthContext from "../context/authContext";
-import {LogoutOutlined, UserOutlined, HomeOutlined} from "@ant-design/icons"
+import AuthContext from "../context/AuthContext";
+import {LogoutOutlined, UserOutlined, HomeOutlined, LoginOutlined, AppstoreAddOutlined} from "@ant-design/icons"
 
 const HeaderComponent = () => {
   const { isLoggedIn, setIsLoggedIn, setUserData, isAdmin } = useContext(AuthContext);
@@ -17,19 +17,20 @@ const HeaderComponent = () => {
   };
 
   const userKey = isAdmin ? "admin" : "user";
-  const userLabel = isAdmin ? "Admin" : "User";
+  const userLabel = isAdmin ? "Admin" : "Employee";
 
   // Define the menu items based on login status
   const menuItems = isLoggedIn
     ? [
-        { key: "home", label: <NavLink to="/">Home</NavLink>, icon: <HomeOutlined /> },
-        { key: "user", label: <NavLink to="/admin">{userLabel}</NavLink>, icon: <UserOutlined /> },
+        { 
+          key: "home", label: <NavLink to="/">Home</NavLink>, icon: <HomeOutlined /> },
+        { key: {userKey}, label: <NavLink to={`/${userKey}`}>{userLabel}</NavLink>, icon: <UserOutlined /> },
         { key: "logout", label: "Log out", onClick: logOutUser, icon: <LogoutOutlined /> },
       ]
     : [
-        { key: "home", label: <NavLink to="/">Home</NavLink> },
-        { key: "login", label: <NavLink to="/login">Login</NavLink> },
-        { key: "register", label: <NavLink to="/register">Register</NavLink> },
+        { key: "home1", label: <NavLink to="/">Home</NavLink>, icon: <HomeOutlined /> },
+        { key: "login", label: <NavLink to="/login">Login</NavLink>, icon: <LoginOutlined /> },
+        { key: "register", label: <NavLink to="/register">Register</NavLink>, icon: <AppstoreAddOutlined /> },
       ];
 
   return (

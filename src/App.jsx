@@ -6,18 +6,20 @@ import {jwtDecode} from 'jwt-decode';
 import axios from 'axios';
 import HeaderComponent from './components/HeaderComponent';
 import FooterComponent from './components/FooterComponent';
-import Home from './pages/Home';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import Admin from './pages/Admin';
-import User from './pages/User';
-import NotFound from './pages/NotFound';
-import AuthContext from './context/authContext';
+import Home from './pages/Home.jsx';
+import Login from './pages/Login.jsx';
+import Register from './pages/Register.jsx';
+import Admin from './pages/Admin.jsx';
+import User from './pages/User.jsx';
+import NotFound from './pages/NotFound.jsx';
+import AuthContext from './context/AuthContext.jsx';
+import SiderSelectContext from './context/SiderSelectContext.jsx';
 
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userData, setUserData] = useState({});
-  const [loading, setLoading] = useState(true); // New loading state to prevent render before token is validated
+  const [loading, setLoading] = useState(true);
+  const [siderSelection, setSiderSelection] = useState();
   
   const storedToken = localStorage.getItem('authToken');
 
@@ -43,6 +45,13 @@ const App = () => {
         const { user_id, role_id, company_id, company_name, exp } = decodedToken;
         setIsLoggedIn(true);
         setUserData({ user_id, role_id, company_id, company_name, exp });
+        if(role_id === 1){
+          setSiderSelection("all-users")
+        }
+        
+        if(role_id){
+          setSiderSelection(`all-products`)
+        }
       } else {
         console.log('Invalid Token');
         setIsLoggedIn(false);
@@ -74,37 +83,38 @@ const App = () => {
 
   return (
     <AuthContext.Provider value={{ isLoggedIn, setIsLoggedIn, userData, setUserData, isAdmin, isUser }}>
-      <ConfigProvider>
-        <Router>
-          <Layout style={{ minWidth: '450px' }}>
-            {/* Header Component */}
-            <HeaderComponent />
+      <SiderSelectContext.Provider value={{siderSelection, setSiderSelection}}>
+        <ConfigProvider>
+          <Router>
+            <Layout style={{ minWidth: '450px' }}>
+              {/* Header Component */}
+              <HeaderComponent />
+              <Routes>
+                {/* Public Routes */}
+                <Route path="/" element={<Home />} />
+                <Route path="/home" element={<Navigate to="/" />} />
+                <Route path="/login" element={ !isLoggedIn?<Login /> : <Navigate to="/"/> } />
+                <Route path="/register" element={<Register />} />
 
-            <Routes>
-              {/* Public Routes */}
-              <Route path="/" element={<Home />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
+                {/* Protected Routes */}
+                <Route
+                  path="/admin"
+                  element={isLoggedIn && isAdmin ? <Admin /> : <Navigate to="/login" />}
+                />
+                <Route
+                  path="/user"
+                  element={isLoggedIn && isUser ? <User /> : <Navigate to="/login" />}
+                />
+                {/* Fallback route */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
 
-              {/* Protected Routes */}
-              <Route
-                path="/admin"
-                element={isLoggedIn && isAdmin ? <Admin /> : <Navigate to="/login" />}
-              />
-              <Route
-                path="/user"
-                element={isLoggedIn && isUser ? <User /> : <Navigate to="/login" />}
-              />
-
-              {/* Fallback route */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-
-            {/* Footer Section */}
-            <FooterComponent />
-          </Layout>
-        </Router>
-      </ConfigProvider>
+              {/* Footer Section */}
+              <FooterComponent />
+            </Layout>
+          </Router>
+        </ConfigProvider>
+      </SiderSelectContext.Provider>
     </AuthContext.Provider>
   );
 };

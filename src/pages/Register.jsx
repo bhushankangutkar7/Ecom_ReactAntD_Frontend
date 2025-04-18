@@ -73,14 +73,6 @@ const register = () => {
     catch(err){
       console.log(err);
     }
-    
-    axios.post(`${backendApi}/register`,values)
-      .then((result)=>{
-        console.log(result);
-      })
-      .catch((err)=>{
-        console.log(err);
-      })
   }
 
   return (
@@ -170,13 +162,13 @@ const register = () => {
                 <Field
                   as={Input}
                   name="first_name"
-                  placeholder="Enter your First Name"
+                  placeholder="Enter Admin First Name"
                   onChange={handleChange}
                   onBlur={handleBlur}
                   value={values.first_name}
                 />
                 <ErrorMessage
-                  name="company_pincode"
+                  name="first_name"
                   component="div"
                   style={{ color: "red", marginTop: "4px" }}
                 />
@@ -189,7 +181,7 @@ const register = () => {
                 <Field
                   as={Input}
                   name="last_name"
-                  placeholder="Enter your Last Name"
+                  placeholder="Enter Admin Last Name"
                   onChange={handleChange}
                   onBlur={handleBlur}
                   value={values.last_name}
@@ -208,7 +200,7 @@ const register = () => {
                 <Field
                   as={Input}
                   name="email_id"
-                  placeholder="Enter your Email Id"
+                  placeholder="Enter Admin Email Id"
                   onChange={handleChange}
                   onBlur={handleBlur}
                   value={values.email_id}
@@ -227,7 +219,7 @@ const register = () => {
                 <Field
                   as={Input.Password}
                   name="password"
-                  placeholder="Enter your Password"
+                  placeholder="Enter Admin Password"
                   onChange={handleChange}
                   onBlur={handleBlur}
                   value={values.password}
