@@ -28,9 +28,8 @@ const productValidationSchema = Yup.object({
         .integer(`Available stock should be an Interger`)
         .positive(`Available stock should be a Positive Number`)
         .required(`Available stock is required`),
-    product_image: Yup.string()
-        .url()
-        .required(),
+    product_image: Yup.mixed()
+        .required('Product image is required'),
     product_price: Yup.number()
         .integer(`Product price should be an Integer`)
         .positive(`Product price should be a Positive number`)
@@ -38,11 +37,9 @@ const productValidationSchema = Yup.object({
 
 });
 
-const AddProductContentComponent = () => {
+const AddProductContent = () => {
 
-    const authToken = localStorage.getItem("authToken");
-
-    const {userData} = useContext(AuthContext);
+    const {userData, authToken} = useContext(AuthContext);
 
     const navigatePath = userData.role_id === 1 ? "admin" : "user"
   
@@ -209,6 +206,8 @@ const AddProductContentComponent = () => {
                     as={Input}
                     name="product_image"
                     placeholder="Enter Product Image Link"
+                    type="file"
+                    accept = "image/*"
                     onChange={handleChange}
                     onBlur={handleBlur}
                     value={values.product_image}
@@ -252,6 +251,6 @@ const AddProductContentComponent = () => {
     );
   };
   
-  export default AddProductContentComponent;
+  export default AddProductContent;
   
   

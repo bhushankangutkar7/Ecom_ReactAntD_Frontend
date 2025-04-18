@@ -1,4 +1,5 @@
 import React, {useContext} from "react";
+import { useNavigate } from "react-router-dom";
 import { Menu, Layout, theme, ConfigProvider} from "antd";
 import {UserOutlined, ProductOutlined, UserAddOutlined, UsergroupAddOutlined, AppstoreAddOutlined, WindowsOutlined} from "@ant-design/icons";
 import AuthContext from "../context/AuthContext";
@@ -10,6 +11,8 @@ const siderComponent = () => {
 
     const {isAdmin} = useContext(AuthContext);
     const {setSiderSelection} = useContext(SiderSelectContext);
+
+    const navigate = useNavigate();
  
 
     const items3= isAdmin ? [
@@ -37,7 +40,7 @@ const siderComponent = () => {
 
     const handleClick = (e) => {
         setSiderSelection(()=> e.key);
-        console.log(e.key);
+        navigate("/admin")
     };
 
     

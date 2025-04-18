@@ -3,12 +3,15 @@ import React, {useEffect, useContext} from "react";
 import { useNavigate } from "react-router-dom";
 import BreadcrumbComponent from "../components/BreadcrumbComponent.jsx";
 import SiderComponent from "../components/SiderComponent.jsx";
-import AllUsersContentComponent from "../components/content-components/AllUsersContentComponent.jsx";
-import AddUserContentComponent from "../components/content-components/AddUserContentComponent.jsx";
-import AllProductsContentComponent from "../components/content-components/AllProductsContentComponent.jsx";
-import AddProductContentComponent from "../components/content-components/AddProductContentComponent.jsx";
+import AllUsersContent from "../components/content-components/AllUsersContent.jsx";
+import AddUserContent from "../components/content-components/AddUserContent.jsx";
+import AllProductsContent from "../components/content-components/AllProductsContent.jsx";
+import AddProductContent from "../components/content-components/AddProductContent.jsx";
 import AuthContext from "../context/AuthContext.jsx";
 import SiderSelectContext from "../context/SiderSelectContext.jsx";
+import UpdateProductContent from "../components/content-components/UpdateProductContent.jsx";
+import ProductsSelectContext from "../context/ProductsSelectContext.jsx";
+
 
 const admin = () => {
     const {isLoggedIn, userData}=useContext(AuthContext);
@@ -16,27 +19,27 @@ const admin = () => {
     const {Content} = Layout;
     const navigate = useNavigate();
 
+    
+    const renderContent = () => {
+        switch(siderSelection || ProductsSelectContext){
+            case "add-user":
+                return <><AddUserContent/></>;
+            case "all-products":
+                return <><AllProductsContent/></>;
+            case "add-product":
+                return <><AddProductContent/></>;
+            default :
+                return <><AllUsersContent/></>;
+        }
+    };
+
+
     useEffect(()=>{
         if(!(isLoggedIn && userData.role_id === 1)){
             navigate("/login");
         }
-    });
+    },[renderContent]);
 
-
-
-
-    const renderContent = () => {
-        switch(siderSelection){
-            case "all-users":
-                return <><AllUsersContentComponent/></>;
-            case "add-user":
-                return <><AddUserContentComponent/></>;
-            case "all-products":
-                return <><AllProductsContentComponent/></>;
-            case "add-product":
-                return <><AddProductContentComponent/></>
-        }
-    };
 
 
     return(

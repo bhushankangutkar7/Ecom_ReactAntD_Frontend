@@ -3,10 +3,8 @@ import React, {useEffect, useContext} from "react";
 import { useNavigate } from "react-router-dom";
 import BreadcrumbComponent from "../components/BreadcrumbComponent.jsx";
 import SiderComponent from "../components/SiderComponent.jsx";
-import AllUsersContentComponent from "../components/content-components/AllUsersContentComponent.jsx";
-import AddUserContentComponent from "../components/content-components/AddUserContentComponent.jsx";
-import AllProductsContentComponent from "../components/content-components/AllProductsContentComponent.jsx";
-import AddProductContentComponent from "../components/content-components/AddProductContentComponent.jsx";
+import AllProductsContent from "../components/content-components/AllProductsContent.jsx";
+import AddProductContent from "../components/content-components/AddProductContent.jsx";
 import AuthContext from "../context/AuthContext.jsx";
 import SiderSelectContext from "../context/SiderSelectContext.jsx";
 
@@ -28,9 +26,9 @@ const User = () => {
     const renderContent = () => {
         switch(siderSelection){
             case "all-products":
-                return <><AllProductsContentComponent/></>;
+                return <><AllProductsContent/></>;
             case "add-product":
-                return <><AddProductContentComponent/></>
+                return <><AddProductContent/></>
         }
     };
 

@@ -1,0 +1,7 @@
+
+
+
+1. On change of file input upload file to /upload route
+2. /upload route will store file in /uploads/2025_04/{file_name}.png
+3. React form will submit that path to product controller along with other form data
+4. Product controller will copy/move file from /uploads/2025_04/{file_name}.png to /uploads/product/{file_name}.png and store the same in DB

@@ -1,41 +1,37 @@
 
 import React, { useEffect, useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Avatar, Button, List, Skeleton } from 'antd';
+import { Avatar, Button, List, Skeleton, Popconfirm } from 'antd';
 import axios from "axios";
 import AuthContext from '../../context/AuthContext';
 
 const count = 10;
-const usersUrl = `${import.meta.env.VITE_BACKEND_API}/users`;
-// const usersUrl = `https://randomuser.me/api/?results=${count}&inc=name,gender,email,nat,picture&noinfo`;
 
 
-
-const allUsersContentComponent = () => {
+const AllUsersContent = () => {
 
     const [initLoading, setInitLoading] = useState(true);
     const [loading, setLoading] = useState(false);
     const [data, setData] = useState([]);
     const [list, setList] = useState([]);
+    const [page, setPage] = useState(1);
 
-    const {isLoggedIn, isAdmin} = useContext(AuthContext);
+    const {isLoggedIn, isAdmin, authToken, backendApi, userData} = useContext(AuthContext);
+
+    const usersUrl = `${backendApi}/users`;
 
     const navigate = useNavigate();
-    
-
-    const authToken = localStorage.getItem("authToken");
 
     useEffect(() => {   
         if(!(isLoggedIn && isAdmin)){
             navigate("/login");
         }
 
-        axios.get(usersUrl,{
+        axios.get(`${usersUrl}?page=${page}&limit=${count}`,{
             headers: {
                 Authorization: `Bearer ${authToken}`
             }
         }).then(res => {
-            console.log(res.data.Users);
             setInitLoading(false);
             setData(res.data.Users);
             setList(res.data.Users);
@@ -47,22 +43,27 @@ const allUsersContentComponent = () => {
     
     const onLoadMore = () => {
       setLoading(true);
+      const nextPage = page + 1;
       setList(
         data.concat(
           Array.from({ length: count }).map(() => ({ loading: true, name: {}, picture: {} })),
         ),
       );
-      fetch(fakeDataUrl)
-        .then(res => res.json())
+        axios.get(`${usersUrl}?page=${nextPage}&limit=${count}`,{
+            headers: {
+                Authorization: `Bearer ${authToken}`
+            }
+        })
         .then(res => {
-          const newData = data.concat(res.results);
-          setData(newData);
-          setList(newData);
-          setLoading(false);
-          // Resetting window's offsetTop so as to display react-virtualized demo underfloor.
-          // In real scene, you can using public method of react-virtualized:
-          // https://stackoverflow.com/questions/46700726/how-to-use-public-method-updateposition-of-react-virtualized
-          window.dispatchEvent(new Event('resize'));
+            const newData = data.concat(res.data.Users);
+            setData(()=>newData);
+            setList(()=>newData);
+            setLoading(false);
+            setPage(prev => prev + 1);
+            // Resetting window's offsetTop so as to display react-virtualized demo underfloor.
+            // In real scene, you can using public method of react-virtualized:
+            // https://stackoverflow.com/questions/46700726/how-to-use-public-method-updateposition-of-react-virtualized
+            window.dispatchEvent(new Event('resize'));
         });
     };
     const loadMore =
@@ -77,7 +78,42 @@ const allUsersContentComponent = () => {
         >
           <Button onClick={onLoadMore}>loading more</Button>
         </div>
-      ) : null;
+    ) : null;
+
+
+    const handleEdit = (e) => {
+      navigate(`/${userData.company_id}/users/${e}`);
+    };
+
+
+    const handleDelete = async(e) => {
+      try{
+        const res = await axios.delete(`${backendApi}/users/${e}`, {
+          headers: {
+            Authorization : `Bearer ${authToken}`,
+          }
+        });
+
+        alert(res.data.message);
+
+        const data = await axios.get(usersUrl, {
+          headers : {
+            Authorization : `Bearer ${authToken}`
+          },
+          count
+        });
+
+        const products = data.data.Products;
+        console.log(products);
+        setInitLoading(false);
+        setData(products);
+        setList(products);
+      }
+      catch(err){
+        console.log(err);
+      }
+
+    };
 
     return(
         <>      
@@ -95,8 +131,18 @@ const allUsersContentComponent = () => {
                   return (
                   <List.Item
                       actions={[
-                          <a key={`${item.role_id}`} style={{color: "green"}}>Edit</a>, 
-                          <a key={`${item.role_id}`} style={{color: "red"}}>Delete</a>
+                          <a key={`${item.role_id}`} style={{color: "green"}}
+                          onClick={()=>handleEdit(item.id)}
+                          >Edit</a>, 
+                          <Popconfirm
+                          title="Are you sure you want to delete this User?"
+                          onConfirm={()=>handleDelete(item.id)}
+                          okText="Yes"
+                          cancelText="No"
+                          >
+                            <a key={`${item.role_id}`} style={{color: "red"}}>Delete</a>
+                          </Popconfirm>
+                          
                       ]}
                   >
                       <Skeleton avatar title={false} loading={item.loading} active>
@@ -116,4 +162,4 @@ const allUsersContentComponent = () => {
     );
 };
 
-export default allUsersContentComponent;
+export default AllUsersContent;

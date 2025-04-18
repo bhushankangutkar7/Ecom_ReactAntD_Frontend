@@ -1,11 +1,11 @@
-import React from 'react';
+import React, {useContext, useEffect} from 'react';
 import { useNavigate } from 'react-router-dom';
 import {Formik, Form, Field, ErrorMessage} from "formik";
 import { Button, Input, Card,Layout } from 'antd';
 import axios from "axios";
 import * as Yup from "yup";
+import AuthContext from '../../context/AuthContext';
 
-const authToken = localStorage.getItem("authToken");
 
 const userValidationSchema = Yup.object({
     first_name: Yup.string()
@@ -35,10 +35,12 @@ const userValidationSchema = Yup.object({
 })
 
 
-const AddUserContentComponent = () => {
+const AddUserContent = () => {
 
 
   const navigate = useNavigate();
+
+  const {authToken} = useContext(AuthContext);
 
   const intialRegistrationValues = {
     first_name: "",
@@ -48,6 +50,12 @@ const AddUserContentComponent = () => {
     confirm_password: "",
     role_id: 2,
   };
+
+  useEffect(()=>{
+    navigate("/admin");
+
+  })
+
 
 
   const handleSubmit = async(values) => {
@@ -204,5 +212,5 @@ const AddUserContentComponent = () => {
   );
 };
 
-export default AddUserContentComponent;
+export default AddUserContent;
 
