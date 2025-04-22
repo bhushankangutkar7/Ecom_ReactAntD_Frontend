@@ -75,7 +75,7 @@ const App = () => {
     } else {
       setLoading(false); // No token found, but we still need to set loading to false
     }
-  }, [authToken]);
+  }, [authToken, isLoggedIn]);
 
   // Check for role_id for redirection
   const isAdmin = userData.role_id === 1 ? true : false;
@@ -119,7 +119,7 @@ const App = () => {
                   />
                   <Route
                     path="/user"
-                    element={isLoggedIn && isUser ? <User /> : <Navigate to="/login" />}
+                    element={isUser ? <User /> : <Navigate to="/login" />}
                   />
                   {/* Fallback route */}
                   <Route

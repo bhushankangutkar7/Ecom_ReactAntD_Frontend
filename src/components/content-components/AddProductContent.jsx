@@ -1,110 +1,140 @@
-import React, {useContext} from 'react';
+import React, { useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {Formik, Form, Field, ErrorMessage} from "formik";
-import { Button, Input, Card,Layout } from 'antd';
-import axios from "axios";
-import * as Yup from "yup";
+import { Formik, Form, Field, ErrorMessage } from 'formik';
+import { Button, Input, Card, Image } from 'antd';
+import axios from 'axios';
+import * as Yup from 'yup';
 import AuthContext from '../../context/AuthContext';
-
-
+import sideSelectContext from "../../context/SiderSelectContext"
 
 const productValidationSchema = Yup.object({
-    category_id: Yup.number()
-        .integer("category_id should be an integer")
-        .positive("category_id can not be negative")
-        .required("compay_id is required"),
-    product_name: Yup.string()
-        .min(3,`Product name should atleast have 4 characters`)
-        .max(100, `Product name should not exceed 100 characters`)
-        .required(`Product name is required`),
-    product_sku: Yup.string()
-        .min(2, `Product sku should atleast have 2 characters`)
-        .max(30, `Product sku should not exceed 30 characters`)
-        .required(`Product sku is required`),
-    product_description: Yup.string()
-        .min(10, `Product description should atleast have 10 characters`)
-        .max(255, `Product description should not exceed 255 characters`),
-    available_stock: Yup.number()
-        .integer(`Available stock should be an Interger`)
-        .positive(`Available stock should be a Positive Number`)
-        .required(`Available stock is required`),
-    product_image: Yup.mixed()
-        .required('Product image is required'),
-    product_price: Yup.number()
-        .integer(`Product price should be an Integer`)
-        .positive(`Product price should be a Positive number`)
-        .required(`Product price is required`)
-
+  category_id: Yup.number()
+    .integer('Please enter a valid Category Id')
+    .positive('Please enter a valid Category Id')
+    .required('Category Id is required'),
+  product_name: Yup.string()
+    .min(3, 'Product name should at least have 4 characters')
+    .max(100, 'Product name should not exceed 100 characters')
+    .required('Product name is required'),
+  product_sku: Yup.string()
+    .min(2, 'Product sku should at least have 2 characters')
+    .max(30, 'Product sku should not exceed 30 characters')
+    .required('Product sku is required'),
+  product_description: Yup.string()
+    .min(10, 'Product description should at least have 10 characters')
+    .max(255, 'Product description should not exceed 255 characters'),
+  available_stock: Yup.number()
+    .integer('Please enter a valid Available Stock')
+    .positive('Please enter a valid Available Stock')
+    .required('Available stock is required'),
+  product_image: Yup.mixed()
+    .required('Product image is required'),
+  product_price: Yup.number()
+    .integer('Please enter a valid Product Price')
+    .positive('Please enter a valid Product Price')
+    .required('Product price is required'),
 });
 
 const AddProductContent = () => {
+  const [imagePreview, setImagePreview] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
+  const { userData, authToken, backendApi } = useContext(AuthContext);
+  const navigatePath = userData.role_id === 1 ? 'admin' : 'user';
+  const {sideSelection, setSiderSelection} = useContext(sideSelectContext);
+  
+  const navigate = useNavigate();
+  
+  const initialRegistrationValues = {
+    category_id: '',
+    product_name: '',
+    product_sku: '',
+    product_description: '',
+    available_stock: '',
+    product_image: '',
+    product_price: '',
+  };
 
-    const {userData, authToken} = useContext(AuthContext);
-
-    const navigatePath = userData.role_id === 1 ? "admin" : "user"
   
-    const navigate = useNavigate();
+  const handleImageChange = async (event) => {
+    try {
+      const selectedFile = event.target.files[0];
+      if (!selectedFile) return;
   
-    const intialRegistrationValues = {
-        category_id: "",
-        product_name: "",
-        product_sku: "",
-        product_description: "",
-        available_stock: "",
-        product_image: "",
-        product_price: "",
-    };
-    
+      const newImage = new FormData();
+      newImage.append('image', selectedFile);
   
+      const imageRes = await axios.post(`${backendApi}/image/uploads`, newImage, {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+          'Content-Type': 'multipart/form-data',
+        },
+      });
   
-    const handleSubmit = async(values) => {
-      console.log(`Form Data: `, values);
-      const backendApi = import.meta.env.VITE_BACKEND_API;
+      if (imageRes.status === 200) {
+        const uploadedImagePath = imageRes.data.file;
+        // Replace both backslashes and forward slashes for cross-platform support
+        const cleanedPath = uploadedImagePath.replace(/^.*[\\/]/, '');
   
-      try{
-        const response = await axios.post(`${backendApi}/products`,values, {
-          headers : {
-            Authorization: `Bearer ${authToken}`,
-          }
-        });
-  
-        if(response.status === 200){
-          console.log(response.data);
-          navigate(`/${navigatePath}`);
-        }  
+        const fullImageUrl = `http://localhost:8000/uploads/2025_04/${cleanedPath}`;
+        setImageUrl(()=>cleanedPath);
+        setImagePreview(fullImageUrl);
       }
-      catch(err){
-        console.log(err);
-      }
-  
+    } catch (err) {
+      console.log(`Image Upload Error: ${err}`);
     }
+  };
   
-    return (
-      <div
+
+  const handleSubmit = async (values) => {
+
+    try {
+      const productPayload = {...values, product_image: imageUrl};
+      
+      
+      const response = await axios.post(`${backendApi}/products`, productPayload, {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
+      });
+
+      
+      if (response.status === 200) { 
+        navigate(`/${navigatePath}`);
+        setSiderSelection("all-products");
+      }
+
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  return (
+    <div
+      style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}
+    >
+      <Card
+        title={<h2 style={{ textAlign: 'center' }}>Add Product</h2>}
         style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
+          margin: '20px',
+          width: '100%',
+          maxWidth: '500px',
+          minWidth: '400px',
+          marginTop: '50px',
         }}
       >
-        <Card
-          title= {<h2 style={{textAlign:"center"}}>Add Product</h2>} 
-          style={{
-            margin:"20px",
-            width: '100%',
-            maxWidth: '500px',
-            minWidth: '400px',
-            marginTop: "50px"
-          }}
+        <Formik
+          initialValues={initialRegistrationValues}
+          validationSchema={productValidationSchema}
+          onSubmit={handleSubmit}
         >
-          <Formik
-            initialValues = {intialRegistrationValues}
-            validationSchema={productValidationSchema}
-            onSubmit={handleSubmit}
-          >
-            {({handleChange, handleBlur, values})=>(
+          {({ handleChange, handleBlur, values }) => {
+            return (
               <Form>
-                {/*Category Id Field */}
+                {/* Category Id Field */}
                 <div style={{ marginBottom: 16 }}>
                   <label>Product Category Id</label>
                   <Field
@@ -118,12 +148,11 @@ const AddProductContent = () => {
                   <ErrorMessage
                     name="category_id"
                     component="div"
-                    style={{ color: "red", marginTop: "4px" }}
+                    style={{ color: 'red', marginTop: '4px' }}
                   />
                 </div>
-  
-  
-                {/*Product Name Field */}
+
+                {/* Product Name Field */}
                 <div style={{ marginBottom: 16 }}>
                   <label>Product Name</label>
                   <Field
@@ -137,12 +166,11 @@ const AddProductContent = () => {
                   <ErrorMessage
                     name="product_name"
                     component="div"
-                    style={{ color: "red", marginTop: "4px" }}
+                    style={{ color: 'red', marginTop: '4px' }}
                   />
                 </div>
-  
-  
-                {/*Product SKU Field */}
+
+                {/* Product SKU Field */}
                 <div style={{ marginBottom: 16 }}>
                   <label>Product SKU</label>
                   <Field
@@ -156,12 +184,11 @@ const AddProductContent = () => {
                   <ErrorMessage
                     name="product_sku"
                     component="div"
-                    style={{ color: "red", marginTop: "4px" }}
+                    style={{ color: 'red', marginTop: '4px' }}
                   />
                 </div>
-  
-  
-                {/*Product Description Field */}
+
+                {/* Product Description Field */}
                 <div style={{ marginBottom: 16 }}>
                   <label>Product Description</label>
                   <Field
@@ -175,12 +202,11 @@ const AddProductContent = () => {
                   <ErrorMessage
                     name="product_description"
                     component="div"
-                    style={{ color: "red", marginTop: "4px" }}
+                    style={{ color: 'red', marginTop: '4px' }}
                   />
                 </div>
-  
-  
-                {/*Product Available Stock Field */}
+
+                {/* Product Available Stock Field */}
                 <div style={{ marginBottom: 16 }}>
                   <label>Product Available Stock</label>
                   <Field
@@ -194,33 +220,51 @@ const AddProductContent = () => {
                   <ErrorMessage
                     name="available_stock"
                     component="div"
-                    style={{ color: "red", marginTop: "4px" }}
+                    style={{ color: 'red', marginTop: '4px' }}
                   />
                 </div>
-  
-  
-                {/*Product Image Field */}
+
+                {/* Product Image Field */}
                 <div style={{ marginBottom: 16 }}>
-                  <label>Product Image link</label>
-                  <Field
-                    as={Input}
-                    name="product_image"
-                    placeholder="Enter Product Image Link"
-                    type="file"
-                    accept = "image/*"
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    value={values.product_image}
-                  />
+                  <label>Product Image</label>
+                  <Field name="product_image">
+                    {({ field, form }) => (
+                      <Input
+                        name = "product_image"
+                        type="file"
+                        accept="image/*"
+                        onChange={(event) => {
+                          const file = event.currentTarget.files[0];
+                          form.setFieldValue('product_image', file);
+                          handleImageChange(event);
+                        }}
+                        onBlur={field.onBlur}
+                      />
+                    )}
+                  </Field>
+
                   <ErrorMessage
                     name="product_image"
                     component="div"
-                    style={{ color: "red", marginTop: "4px" }}
+                    style={{ color: 'red', marginTop: '4px' }}
                   />
+
+
+                  {imagePreview && (
+                    <div style={{ marginTop: 10 }}>
+                      <img
+                        src={imagePreview}
+                        alt="Preview"
+                        style={{ width: "100%", maxHeight: "250px", objectFit: "contain", border: "1px solid #ccc" }}
+                      />
+                    </div>
+                  )}
+
+
+
                 </div>
-  
-  
-                {/*Product Available Stock Field */}
+
+                {/* Product Price Field */}
                 <div style={{ marginBottom: 16 }}>
                   <label>Product Price</label>
                   <Field
@@ -234,23 +278,21 @@ const AddProductContent = () => {
                   <ErrorMessage
                     name="product_price"
                     component="div"
-                    style={{ color: "red", marginTop: "4px" }}
+                    style={{ color: 'red', marginTop: '4px' }}
                   />
                 </div>
-  
+
                 {/* Submit Button */}
                 <Button type="primary" htmlType="submit" block>
-                  Login
+                  Add Product
                 </Button>
               </Form>
-            )}
-          </Formik>
-          
-        </Card>
-      </div>
-    );
-  };
-  
-  export default AddProductContent;
-  
-  
+            );
+          }}
+        </Formik>
+      </Card>
+    </div>
+  );
+};
+
+export default AddProductContent;

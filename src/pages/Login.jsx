@@ -9,20 +9,20 @@ import AuthContext from "../context/authContext";
 
 const loginValidationSchema = Yup.object({
   email_id: Yup.string()
-    .min(10,"Email Id atleast 10 characters long")
+    .min(10,"Email Id must atleast be 10 characters long")
     .max(100,`Email Id should not exceed 100 characters`)
     .matches(/[@]/,`Email Id must contain "@" symbol`)
     .matches(/[.]/,`Email Id must have "."`)
     .email("Invalid Email Id format")
     .required(`Email Id is required`),
   password: Yup.string()
-    .min(8, "Password must be at least 8 characters")
-    .max(16, "Password must be at most 16 characters")
-    .matches(/[a-z]/, "Must include at least one lowercase letter")
-    .matches(/[A-Z]/, "Must include at least one uppercase letter")
-    .matches(/[@#$%&*/]/, "Must include one special character (@#$%&*/)")
+    .min(8, "Password must contain atleast 8 characters")
+    .max(16, "Password cannot exceed 16 characters")
+    .matches(/[a-z]/, "Password must contain atleast one lowercase")
+    .matches(/[A-Z]/, "Password must contain atleast one Uppercase")
+    .matches(/[@#$%&*/]/, "Password must contain atleast one special character from (@,#,$,%,&,*,/)")
+    .required("Password is required")
     .required("Password is required"),
-  remember: Yup.boolean(),
 });
 
 const login = () => {
@@ -39,8 +39,6 @@ const login = () => {
 
 
   const handleSubmit = async(values, e) => {
-    console.log(values);
-    console.log(e);
     const backendApi = import.meta.env.VITE_BACKEND_API;
 
     try{
@@ -64,6 +62,7 @@ const login = () => {
     } 
     catch(err){
       console.log(err);
+      res.json({err: 1, message: err});
       setIsLoggedIn(false);
     }
   };
@@ -124,16 +123,6 @@ const login = () => {
                   component="div"
                   style={{ color: "red", marginTop: "4px" }}
                 />
-              </div>
-
-              {/* Remember Me */}
-              <div style={{ marginBottom: 16 }}>
-                <Checkbox
-                  checked={values.remember}
-                  onChange={(e) => setFieldValue("remember", e.target.checked)}
-                >
-                  Remember Me
-                </Checkbox>
               </div>
 
               {/* Submit Button */}

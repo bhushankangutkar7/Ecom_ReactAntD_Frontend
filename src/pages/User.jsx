@@ -15,22 +15,22 @@ const User = () => {
     const {Content} = Layout;
     const navigate = useNavigate();
 
-    useEffect(()=>{
-        if(!(isLoggedIn && userData.role_id === 2)){
-            navigate("/login");
-        }
-    });
-
-
-
     const renderContent = () => {
-        switch(siderSelection){
-            case "all-products":
-                return <><AllProductsContent/></>;
+        switch(siderSelection || ProductsSelectContext){
             case "add-product":
-                return <><AddProductContent/></>
+                return <><AddProductContent/></>;
+            case "all-products":
+                return <><AllProductsContent/></>; 
+
         }
     };
+
+    useEffect(() => {
+        if (!(isLoggedIn || userData?.role_id === 2)) {
+            navigate("/login");
+        }
+    }, [isLoggedIn, userData]);
+    
 
 
     return(

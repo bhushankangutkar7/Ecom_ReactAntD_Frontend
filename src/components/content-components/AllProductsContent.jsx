@@ -21,11 +21,11 @@ const AllProductsContent = () => {
     const {isLoggedIn, authToken, backendApi, userData} = useContext(AuthContext);
     const {productSelection, setProductSelection, siderSelection, setSideSelection} = useContext(ProductsSelectContext);
 
-    const productsUrl = `${backendApi}/products/`;
+    const productsUrl = `${backendApi}/products/company`;
     const navigate = useNavigate();
 
     useEffect(() => {   
-        if(!(isLoggedIn)){
+        if(!isLoggedIn){
             navigate("/login"); 
         }
 
@@ -36,7 +36,6 @@ const AllProductsContent = () => {
             count
         }).then(res => {
             const products = res.data.Products;
-            console.log(products);
             setInitLoading(false);  
             setData(()=>products);
             setList(()=>products);
@@ -54,22 +53,23 @@ const AllProductsContent = () => {
           Array.from({ length: count }).map(() => ({ loading: true, name: {}, picture: {} })),
         ),
       );
-        axios.get(`${productsUrl}?page=${nextPage}&limit=${count}`,{
-            headers: {
-                Authorization: `Bearer ${authToken}`
-            }
-        })
-        .then(res => {
-            const newData = data.concat(res.data.Products);
-            setData(()=>newData);
-            setList(()=>newData);
-            setLoading(false);
-            setPage(prev => prev + 1);
-            // Resetting window's offsetTop so as to display react-virtualized demo underfloor.
-            // In real scene, you can using public method of react-virtualized:
-            // https://stackoverflow.com/questions/46700726/how-to-use-public-method-updateposition-of-react-virtualized
-            window.dispatchEvent(new Event('resize'));
-        });
+
+      axios.get(`${productsUrl}?page=${nextPage}&limit=${count}`,{
+          headers: {
+              Authorization: `Bearer ${authToken}`
+          }
+      })
+      .then(res => {
+          const newData = data.concat(res.data.Products);
+          setData(()=>newData);
+          setList(()=>newData);
+          setLoading(false);
+          setPage(prev => prev + 1);
+          // Resetting window's offsetTop so as to display react-virtualized demo underfloor.
+          // In real scene, you can using public method of react-virtualized:
+          // https://stackoverflow.com/questions/46700726/how-to-use-public-method-updateposition-of-react-virtualized
+          window.dispatchEvent(new Event('resize'));
+      });
     };
     const loadMore =
       !initLoading && !loading ? (
@@ -89,7 +89,7 @@ const AllProductsContent = () => {
       navigate(`/${userData.company_id}/products/${e}`);
     };
 
-    console.log(productSelection)
+
 
     const handleDelete = async(e) => {
       try{

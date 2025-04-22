@@ -38,7 +38,7 @@ const admin = () => {
         if(!(isLoggedIn && userData.role_id === 1)){
             navigate("/login");
         }
-    },[renderContent]);
+    },[isLoggedIn, userData, siderSelection]);
 
 
 

@@ -5,33 +5,34 @@ import { Button, Input, Card,Layout } from 'antd';
 import axios from "axios";
 import * as Yup from "yup";
 import AuthContext from '../../context/AuthContext';
+import SiderSelectContext from '../../context/SiderSelectContext';
 
 
 const userValidationSchema = Yup.object({
-    first_name: Yup.string()
-        .min(2,"First name must be alteat Two characters long")
-        .max(16, "First name must not exceed 16 characters")
-        .required("First Name is required"),
-    last_name: Yup.string()
-        .min(2,"Last name must be alteat Two characters long")
-        .max(16, "Last name must not exceed 16 characters")
-        .required("Last Name is required"),
-    email_id: Yup.string()
-        .min(10,"Email Id atleast 10 characters long")
-        .max(100,`Email Id should not exceed 100 characters`)
-        .matches(/[@]/,`Email Id must contain "@" symbol`)
-        .matches(/[.]/,`Email Id must have "."`)
-        .email("Invalid Email Id format")
-        .required(`Email Id is required`),
-    password: Yup.string()
-        .min(8, "Password must be at least 8 characters")
-        .max(16, "Password must be at most 16 characters")
-        .matches(/[a-z]/, "Must include at least one lowercase letter")
-        .matches(/[A-Z]/, "Must include at least one uppercase letter")
-        .matches(/[@#$%&*/]/, "Must include one special character (@#$%&*/)")
-        .required("Password is required"),
-    confirm_password:Yup.string()
-        .oneOf([Yup.ref('password'), null], `Password must match`),
+  first_name: Yup.string()
+    .min(2,"First name must be alteat Two characters long")
+    .max(16, "First name must not exceed 16 characters")
+    .required("First Name is required"),
+  last_name: Yup.string()
+    .min(2,"Last name must be alteat Two characters long")
+    .max(16, "Last name must not exceed 16 characters")
+    .required("Last Name is required"),
+  email_id: Yup.string()
+    .min(10,"Email Id atleast 10 characters long")
+    .max(100,`Email Id should not exceed 100 characters`)
+    .matches(/[@]/,`Email Id must contain "@" symbol`)
+    .matches(/[.]/,`Email Id must have "."`)
+    .email("Invalid Email Id format")
+    .required(`Email Id is required`),
+  password: Yup.string()
+    .min(8,"Password must contain atleast 8 characters")
+    .max(16,"Password cannot exceed 16 characters")
+    .matches(/[a-z]/, "Password must contain atleast one lowercase")
+    .matches(/[A-Z]/, "Password must contain atleast one Uppercase")
+    .matches(/[@#$%&*/]/, "Password must contain atleast one special character from (@,#,$,%,&,*,/)")
+    .required("Password is required"),
+  confirm_password: Yup.string()
+      .oneOf([Yup.ref('password'), null], `Password must match`),
 })
 
 
@@ -40,7 +41,8 @@ const AddUserContent = () => {
 
   const navigate = useNavigate();
 
-  const {authToken} = useContext(AuthContext);
+  const {authToken, isLoggedIn, isAdmin} = useContext(AuthContext);
+  const {setSiderSelection} = useContext(SiderSelectContext);
 
   const intialRegistrationValues = {
     first_name: "",
@@ -52,14 +54,14 @@ const AddUserContent = () => {
   };
 
   useEffect(()=>{
-    navigate("/admin");
-
+    if(!(isLoggedIn && isAdmin)){
+      navigate("/admin");
+    }
   })
 
 
 
   const handleSubmit = async(values) => {
-    console.log(`Form Data: `, values);
     const backendApi = import.meta.env.VITE_BACKEND_API;
 
     try{
@@ -70,8 +72,8 @@ const AddUserContent = () => {
       });
 
       if(response.status === 200){
-        console.log(response.data.msg);
         navigate("/admin");
+        setSiderSelection("all-users");
       }  
     }
     catch(err){
@@ -201,7 +203,7 @@ const AddUserContent = () => {
 
               {/* Submit Button */}
               <Button type="primary" htmlType="submit" block>
-                Login
+                Add User
               </Button>
             </Form>
           )}

@@ -42,7 +42,7 @@ const HeaderComponent = () => {
       }}
     >
       <div className="demo-logo">
-        <h1 style={{ color: "#d4d0c7", margin: 0 }}>Ecom</h1>
+        <NavLink to="/home"><h1 style={{ color: "#d4d0c7", margin: 0 }}>Ecom</h1></NavLink>
       </div>
 
       <div style={{ flex: 1, display: "flex", justifyContent: "flex-end" }}>

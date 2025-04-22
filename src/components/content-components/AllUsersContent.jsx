@@ -98,7 +98,7 @@ const AllUsersContent = () => {
 
         const data = await axios.get(usersUrl, {
           headers : {
-            Authorization : `Bearer ${authToken}`
+            Authorization :   `Bearer ${authToken}`
           },
           count
         });

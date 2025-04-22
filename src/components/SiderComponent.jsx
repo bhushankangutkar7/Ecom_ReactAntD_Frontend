@@ -9,7 +9,7 @@ const {Sider}  = Layout;
 
 const siderComponent = () => {
 
-    const {isAdmin} = useContext(AuthContext);
+    const {isAdmin,isUser} = useContext(AuthContext);
     const {setSiderSelection} = useContext(SiderSelectContext);
 
     const navigate = useNavigate();
@@ -40,7 +40,11 @@ const siderComponent = () => {
 
     const handleClick = (e) => {
         setSiderSelection(()=> e.key);
-        navigate("/admin")
+        if (isAdmin) {
+            navigate("/admin");
+        } else if (isUser) {
+            navigate("/user");
+        }
     };
 
     

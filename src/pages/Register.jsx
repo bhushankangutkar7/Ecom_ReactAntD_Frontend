@@ -10,9 +10,9 @@ const registerValidationSchema = Yup.object({
     .required("Company name is required"),  
   company_address: Yup.string()
     .required("Company Address is required"),
-  company_pincode : Yup.number()
-    .integer("Pincode needs to be an Integer")
-    .positive("Pincode can't be Negative"),
+  company_pincode: Yup.string()
+    .matches(/^\d{6}$/, "Pincode should be a number and must be exactly 6 digits")
+    .required("Pincode is required"),
   first_name: Yup.string()
     .min(2,"First name must be alteat Two characters long")
     .max(16, "First name must not exceed 16 characters")
@@ -28,12 +28,13 @@ const registerValidationSchema = Yup.object({
     .matches(/[.]/,`Email Id must have "."`)
     .email("Invalid Email Id format")
     .required(`Email Id is required`),
-  password: Yup.string()
-    .min(8, "Password must be at least 8 characters")
-    .max(16, "Password must be at most 16 characters")
-    .matches(/[a-z]/, "Must include at least one lowercase letter")
-    .matches(/[A-Z]/, "Must include at least one uppercase letter")
-    .matches(/[@#$%&*/]/, "Must include one special character (@#$%&*/)")
+  password : Yup.string()
+    .min(8, "Password must contain atleast 8 characters")
+    .max(16, "Password cannot exceed 16 characters")
+    .matches(/[a-z]/, "Password must contain atleast one lowercase")
+    .matches(/[A-Z]/, "Password must contain atleast one Uppercase")
+    .matches(/[@#$%&*/]/, "Password must contain atleast one special character from (@,#,$,%,&,*,/)")
+    .required("Password is required")
     .required("Password is required"),
   confirm_password:Yup.string()
     .oneOf([Yup.ref('password'), null], `Password must match`),
@@ -59,14 +60,13 @@ const register = () => {
   };
 
   const handleSubmit = async(values) => {
-    console.log(`Form Data: `, values);
     const backendApi = import.meta.env.VITE_BACKEND_API;
 
     try{
       const response = await axios.post(`${backendApi}/register`, values);
       if(response.status === 200){
         alert(response.data.msg);
-        navigate("/auth/login");
+        navigate("/login");
       }
       
     }
@@ -84,7 +84,7 @@ const register = () => {
       }}
     >
       <Card
-        title= {<h2 style={{textAlign:"center"}}>Register</h2>} 
+        title= {<h2 style={{textAlign:"center"}}>Company & Admin Register</h2>} 
         style={{
           margin:"20px",
           width: '100%',

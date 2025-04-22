@@ -5,6 +5,7 @@ import { Button, Input, Card,Layout } from 'antd';
 import axios from "axios";
 import * as Yup from "yup";
 import AuthContext from '../../context/AuthContext';
+import selectSiderContext from "../../context/SiderSelectContext"
 
 
 const userValidationSchema = Yup.object({
@@ -23,12 +24,12 @@ const userValidationSchema = Yup.object({
         .matches(/[.]/,`Email Id must have "."`)
         .email("Invalid Email Id format")
         .required(`Email Id is required`),
-    password: Yup.string()
-        .min(8, "Password must be at least 8 characters")
-        .max(16, "Password must be at most 16 characters")
-        .matches(/[a-z]/, "Must include at least one lowercase letter")
-        .matches(/[A-Z]/, "Must include at least one uppercase letter")
-        .matches(/[@#$%&*/]/, "Must include one special character (@#$%&*/)")
+    password : Yup.string()
+        .min(8, "Password must contain atleast 8 characters")
+        .max(16, "Password cannot exceed 16 characters")
+        .matches(/[a-z]/, "Password must contain atleast one lowercase")
+        .matches(/[A-Z]/, "Password must contain atleast one Uppercase")
+        .matches(/[@#$%&*/]/, "Password must contain atleast one special character from (@,#,$,%,&,*,/)")
         .required("Password is required"),
     confirm_password:Yup.string()
         .oneOf([Yup.ref('password'), null], `Password must match`),
@@ -39,6 +40,7 @@ const UpdateUserContent = () => {
 
   const {userData, authToken, backendApi} = useContext(AuthContext);
   const [existingData, setExistingData] = useState({});
+  const {setSiderSelection} = useContext(selectSiderContext);
 
   const navigate = useNavigate();
   const {id} = useParams();
@@ -54,15 +56,13 @@ const UpdateUserContent = () => {
     })
   },[]);
 
-  const navigatePath = userData.role_id === 1 ? "admin" : "user";
-
 
   const intialRegistrationValues = {
     first_name: existingData.first_name || "",
     last_name: existingData.last_name || "",
     email_id: existingData.email_id || "",
-    password: existingData.password || "",
-    confirm_password: existingData.confirm_password || "",
+    password: "",
+    confirm_password:"",
     role_id: 2,
   };
 
@@ -71,22 +71,27 @@ const UpdateUserContent = () => {
     const backendApi = import.meta.env.VITE_BACKEND_API;
 
     try{
-      const response = await axios.post(`${backendApi}/users`,values, {
+      const response = await axios.put(`${backendApi}/users/${id}`,values, {
         headers : {
           Authorization: `Bearer ${authToken}`,
         }
       });
 
       if(response.status === 200){
-        console.log(response.data.msg);
         navigate("/admin");
+        setSiderSelection("all-users");
       }  
     }
     catch(err){
       console.log(err);
     }
-
   }
+
+  const handleCancel = () => {
+    navigate("/admin");
+    setSiderSelection("all-users");
+  };
+
 
   return (
     <div
@@ -210,7 +215,17 @@ const UpdateUserContent = () => {
 
               {/* Submit Button */}
               <Button type="primary" htmlType="submit" block>
-                Login
+                Update User
+              </Button>
+
+              <br/>
+              <br/>
+
+              {/* Cancel Button */}
+              <Button type="danger" color="danger" variant="solid" block
+              onClick = {handleCancel}
+              >
+                Cancel
               </Button>
             </Form>
           )}
