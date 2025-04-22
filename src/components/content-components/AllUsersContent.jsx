@@ -1,165 +1,124 @@
-
 import React, { useEffect, useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Avatar, Button, List, Skeleton, Popconfirm } from 'antd';
+import { Table, Button, Popconfirm, Avatar } from 'antd';
 import axios from "axios";
 import AuthContext from '../../context/AuthContext';
 
-const count = 10;
-
-
 const AllUsersContent = () => {
+  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState([]);
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 5,
+    total: 0,
+    showQuickJumper: false,
+    showSizeChanger: true,
+    pageSizeOptions: ['5', '10', '15', '20'],
+  });
 
-    const [initLoading, setInitLoading] = useState(true);
-    const [loading, setLoading] = useState(false);
-    const [data, setData] = useState([]);
-    const [list, setList] = useState([]);
-    const [page, setPage] = useState(1);
+  const { isLoggedIn, isAdmin, authToken, backendApi, userData } = useContext(AuthContext);
+  const usersUrl = `${backendApi}/users`;
+  const navigate = useNavigate();
 
-    const {isLoggedIn, isAdmin, authToken, backendApi, userData} = useContext(AuthContext);
-
-    const usersUrl = `${backendApi}/users`;
-
-    const navigate = useNavigate();
-
-    useEffect(() => {   
-        if(!(isLoggedIn && isAdmin)){
-            navigate("/login");
+  const fetchUsers = async (page = 1, pageSize = 10) => {
+    setLoading(true);
+    try {
+      const res = await axios.get(`${usersUrl}?page=${page}&limit=${pageSize}`, {
+        headers: {
+          Authorization: `Bearer ${authToken}`
         }
+      });
+      setData(res.data.Users || []);
+      setPagination({
+        current: page,
+        pageSize,
+        total: res.data.pagination.total,
+      });
+    } catch (err) {
+      console.error(err);
+    }
+    setLoading(false);
+  };
 
-        axios.get(`${usersUrl}?page=${page}&limit=${count}`,{
-            headers: {
-                Authorization: `Bearer ${authToken}`
-            }
-        }).then(res => {
-            setInitLoading(false);
-            setData(res.data.Users);
-            setList(res.data.Users);
+  useEffect(() => {
+    if (!(isLoggedIn && isAdmin)) {
+      navigate("/login");
+    } else {
+      fetchUsers();
+    }
+  }, [])
 
-        })
-        .catch(err=> console.log(err));
+  const handleEdit = (id) => {
+    navigate(`/${userData.company_id}/users/${id}`);
+  };
 
-    }, []);
-    
-    const onLoadMore = () => {
-      setLoading(true);
-      const nextPage = page + 1;
-      setList(
-        data.concat(
-          Array.from({ length: count }).map(() => ({ loading: true, name: {}, picture: {} })),
-        ),
-      );
-        axios.get(`${usersUrl}?page=${nextPage}&limit=${count}`,{
-            headers: {
-                Authorization: `Bearer ${authToken}`
-            }
-        })
-        .then(res => {
-            const newData = data.concat(res.data.Users);
-            setData(()=>newData);
-            setList(()=>newData);
-            setLoading(false);
-            setPage(prev => prev + 1);
-            // Resetting window's offsetTop so as to display react-virtualized demo underfloor.
-            // In real scene, you can using public method of react-virtualized:
-            // https://stackoverflow.com/questions/46700726/how-to-use-public-method-updateposition-of-react-virtualized
-            window.dispatchEvent(new Event('resize'));
-        });
-    };
-    const loadMore =
-      !initLoading && !loading ? (
-        <div
-          style={{
-            textAlign: 'center',
-            marginTop: 12,
-            height: 32,
-            lineHeight: '32px',
-          }}
-        >
-          <Button onClick={onLoadMore}>loading more</Button>
-        </div>
-    ) : null;
+  const handleDelete = async (id) => {
+    try {
+      const res = await axios.delete(`${backendApi}/users/${id}`, {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        }
+      });
+      alert(res.data.message);
+      fetchUsers(pagination.current, pagination.pageSize); // refresh list
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
+  const handleTableChange = (pagination) => {
+    fetchUsers(pagination.current, pagination.pageSize);
+  };
 
-    const handleEdit = (e) => {
-      navigate(`/${userData.company_id}/users/${e}`);
-    };
-
-
-    const handleDelete = async(e) => {
-      try{
-        const res = await axios.delete(`${backendApi}/users/${e}`, {
-          headers: {
-            Authorization : `Bearer ${authToken}`,
-          }
-        });
-
-        alert(res.data.message);
-
-        const data = await axios.get(usersUrl, {
-          headers : {
-            Authorization :   `Bearer ${authToken}`
-          },
-          count
-        });
-
-        const products = data.data.Products;
-        console.log(products);
-        setInitLoading(false);
-        setData(products);
-        setList(products);
-      }
-      catch(err){
-        console.log(err);
-      }
-
-    };
-
-    return(
-        <>      
-          <List
-              className="demo-loadmore-list"
-              loading={initLoading}
-              itemLayout="horizontal"
-              loadMore={loadMore}
-              dataSource={list}
-              style={{
-                  margin: 20,
-              }}
-              renderItem={item => {
-                  var _a;
-                  return (
-                  <List.Item
-                      actions={[
-                          <a key={`${item.role_id}`} style={{color: "green"}}
-                          onClick={()=>handleEdit(item.id)}
-                          >Edit</a>, 
-                          <Popconfirm
-                          title="Are you sure you want to delete this User?"
-                          onConfirm={()=>handleDelete(item.id)}
-                          okText="Yes"
-                          cancelText="No"
-                          >
-                            <a key={`${item.role_id}`} style={{color: "red"}}>Delete</a>
-                          </Popconfirm>
-                          
-                      ]}
-                  >
-                      <Skeleton avatar title={false} loading={item.loading} active>
-                      <List.Item.Meta
-                          avatar={<Avatar src={item?.picture?.large} />}
-                          title={`${item.first_name} ${item.last_name}`
-                          }
-                          description={`"EmailId" : "${item.email_id}" ,  "CompanyId": "${item.company_id}"  ,  "User Role": "${item.role_id}"`}
-                      />
-                      <div><strong>{item.role_id === 1? "Admin": "Employee"}</strong></div>
-                      </Skeleton>
-                  </List.Item>
-                  );
-              }}
-          />
+  const columns = [
+    {
+      title: 'Name',
+      render: (text, record) => `${record.first_name} ${record.last_name}`,
+    },
+    {
+      title: 'Email',
+      dataIndex: 'email_id',
+    },
+    {
+      title: 'Company ID',
+      dataIndex: 'company_id',
+    },
+    {
+      title: 'Role',
+      dataIndex: 'role_id',
+      render: (role_id) => <strong>{role_id === 1 ? "Admin" : "Employee"}</strong>,
+    },
+    {
+      title: 'Actions',
+      render: (_, record) => (
+        <>
+          <Button type="link" onClick={() => handleEdit(record.id)} style={{ color: "green" }}>
+            Edit
+          </Button>
+          <Popconfirm
+            title="Are you sure you want to delete this user?"
+            onConfirm={() => handleDelete(record.id)}
+            okText="Yes"
+            cancelText="No"
+          >
+            <Button type="link" danger>Delete</Button>
+          </Popconfirm>
         </>
-    );
+      ),
+    },
+  ];
+
+  return (
+    <Table
+      columns={columns}
+      rowKey={(record) => record.id}
+      dataSource={data}
+      pagination={pagination}
+      loading={loading}
+      onChange={handleTableChange}
+      style={{ margin: 20 }}
+    />
+  );
 };
 
 export default AllUsersContent;

@@ -9,7 +9,6 @@ import AllProductsContent from "../components/content-components/AllProductsCont
 import AddProductContent from "../components/content-components/AddProductContent.jsx";
 import AuthContext from "../context/AuthContext.jsx";
 import SiderSelectContext from "../context/SiderSelectContext.jsx";
-import UpdateProductContent from "../components/content-components/UpdateProductContent.jsx";
 import ProductsSelectContext from "../context/ProductsSelectContext.jsx";
 
 
