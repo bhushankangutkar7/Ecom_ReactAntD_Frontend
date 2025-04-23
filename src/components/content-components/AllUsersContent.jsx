@@ -11,7 +11,7 @@ const AllUsersContent = () => {
     current: 1,
     pageSize: 5,
     total: 0,
-    showQuickJumper: false,
+    showQuickJumper: true,
     showSizeChanger: true,
     pageSizeOptions: ['5', '10', '15', '20'],
   });
@@ -20,18 +20,18 @@ const AllUsersContent = () => {
   const usersUrl = `${backendApi}/users`;
   const navigate = useNavigate();
 
-  const fetchUsers = async (page = 1, pageSize = 10) => {
+  const fetchUsers = async (page = 1, limit = 10) => {
     setLoading(true);
     try {
-      const res = await axios.get(`${usersUrl}?page=${page}&limit=${pageSize}`, {
+      const res = await axios.get(`${usersUrl}?page=${page}&limit=${limit}}`, {
         headers: {
           Authorization: `Bearer ${authToken}`
         }
       });
       setData(res.data.Users || []);
-      setPagination({
-        current: page,
-        pageSize,
+      setPagination({...pagination,
+        current: res.data.pagination.current,
+        pageSize: res.data.pagination.limit,
         total: res.data.pagination.total,
       });
     } catch (err) {
@@ -62,7 +62,7 @@ const AllUsersContent = () => {
       alert(res.data.message);
       fetchUsers(pagination.current, pagination.pageSize); // refresh list
     } catch (err) {
-      console.log(err);
+      console.error("User Delete error:", error);
     }
   };
 

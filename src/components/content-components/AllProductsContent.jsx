@@ -10,15 +10,17 @@ const AllProductsContent = () => {
   const [data, setData] = useState([]);
   const [pagination, setPagination] = useState({
     current: 1,
-    pageSize: 10,
+    pageSize: 5,
     total: 0,
+    showQuickJumper: true,
+    showSizeChanger: true,
+    pageSizeOptions: ["5", "10", "15", "20"],
   });
 
   const { isLoggedIn, authToken, backendApi, userData } = useContext(AuthContext);
-  const { productSelection, setProductSelection, siderSelection, setSideSelection } = useContext(ProductsSelectContext);
+  const productsUrl = `${backendApi}/products/company`;
   const navigate = useNavigate();
 
-  const productsUrl = `${backendApi}/products/company`;
 
   const fetchProducts = async (page = 1, limit = 10) => {
     setLoading(true);
@@ -32,9 +34,10 @@ const AllProductsContent = () => {
       const products = res.data.Products || [];
       setData(products);
       setPagination({
-        current: page,
-        pageSize: limit,
-        total: res.data.pagination?.total || products.length,
+        ...pagination,
+        current: res.data.pagination.current,
+        pageSize: res.data.pagination.limit,
+        total: res.data.pagination.total,
       });
     } catch (error) {
       console.error("Error fetching products:", error);
@@ -64,7 +67,7 @@ const AllProductsContent = () => {
       alert(res.data.message);
       fetchProducts(pagination.current, pagination.pageSize);
     } catch (error) {
-      console.error("Delete error:", error);
+      console.error("Product Delete error:", error);
     }
   };
 
